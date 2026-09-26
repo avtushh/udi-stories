@@ -32,6 +32,7 @@ Hash only: `#/` library, `#/s/<slug>` story, `#/t/<theme>` theme filter, `#/map`
 ## Rules already decided
 
 - Brand in the header is **אודי סיפורים**. Do not restore a second title "סיפורים גמורים".
+- Link previews (WhatsApp) come from the Open Graph tags in `index.html` and `og.png` (1200×630 PNG, absolute URL). Do not point `og:image` at the SVG favicon.
 - Cards show theme and reading time. No author name and no date on the card.
 - Reading time is words / 200, minimum 1 minute, labeled `דקת קריאה` or `כ־N דקות קריאה`.
 - Synopsis is spoilery. Keep it behind `<summary>תקציר</summary>`. On a fine pointer, show the tooltip only after 1 second of hover.
