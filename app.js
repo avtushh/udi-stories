@@ -241,7 +241,7 @@ function renderHome() {
   app.innerHTML = `
     <div class="page-head head-row">
       <div>
-        <p>${stories.length} סיפורים. קוראים כאן, ומחפשים לפי מילה מתוך הסיפור.</p>
+        <p>${stories.length} סיפורים מאת אודי גבריאלי</p>
       </div>
       <div class="actions">
         <div class="view-toggle" role="group" aria-label="מיון">
@@ -350,7 +350,7 @@ function renderStory() {
         <div>
           <p class="read-time">${readingLabel(s.text)}</p>
           <h1>${esc(s.title)}</h1>
-          <p class="byline">מאת <b>אודי</b></p>
+          <p class="byline">מאת <b>אודי גבריאלי</b></p>
           ${s.synopsis ? `<div class="blurb"><details><summary>תקציר</summary><p>${esc(s.synopsis)}</p></details><div class="tip" role="tooltip">${esc(s.synopsis)}</div></div>` : ""}
           <div class="chips" style="margin:0">
             ${tags.map((t, i) => `<button class="tag${i < shared.length ? " shared" : ""}" data-tag="${esc(t)}" type="button">${esc(t)}</button>`).join("")}
