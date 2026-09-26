@@ -1,6 +1,6 @@
 # אודי סיפורים
 
-Hebrew reading site for Udi's finished short stories. Static files, no build.
+Hebrew reading site for Udi's finished short stories. Static files, no build. The live site is for reading. Adding and editing stories runs only on this computer.
 
 **Live:** https://avtushh.github.io/udi-stories/
 
@@ -11,21 +11,27 @@ Hebrew reading site for Udi's finished short stories. Static files, no build.
 | File | Role |
 | --- | --- |
 | `index.html` | Page shell, Hebrew RTL |
-| `app.js` | Library, search, themes, tags, story view |
+| `app.js` | Library, search, themes, tags, story view, local editor dialogs |
 | `styles.css` | Layout |
-| `data/stories.js` | `window.STORIES` — one object per story |
+| `data/stories.js` | Original catalog, `window.STORIES`. The editor must not rewrite this file |
+| `data/added.js` | Stories added later, `window.ADDED_STORIES`. The only catalog the editor writes |
+| `serve.py` | Local server on port 8765: login link, Word upload, save, edit, delete |
+| `editor.html` | Redirects to `index.html`. There is no separate editor screen |
+| `.secrets/allowlist` | One allowed address per line. Gitignored. Never copy those addresses into the repo |
 | `.nojekyll` | Tells GitHub Pages to serve the files as-is |
 
 Local copy of this repo: `/Users/avtush/p/_Family/Aba/site`  
 Original Word files: `/Users/avtush/p/_Family/Aba/סיפורים גמורים`
 
-## Preview
+## Local site
 
 ```bash
-python3 -m http.server 8765
+python3 serve.py
 ```
 
-Open `http://127.0.0.1:8765/`.
+Open `http://127.0.0.1:8765/`. `python3 -m http.server` can show the pages, but it cannot save a story.
+
+On localhost, logged out, the nav shows **התחברות**. Logged in, it shows **+ הוספת סיפור** and **התנתקות**. The published site does not show **התחברות**. GitHub Pages only serves the files; it does not run `serve.py`.
 
 ## Publish
 
@@ -35,4 +41,4 @@ Do not publish from the company account `kavtush`.
 
 ## Continuing the work
 
-Agents working in this repo should follow `.cursor/skills/udi-stories/SKILL.md`. It records the decisions that are easy to undo by accident: the single header title, dates only at the end of a story, how tags and names are chosen, and which GitHub account owns the site.
+Agents working in this repo should follow `.cursor/skills/udi-stories/SKILL.md`. It records the decisions that are easy to undo by accident: the single header title, dates only at the end of a story, how tags and names are chosen, the two catalogs, and which GitHub account owns the site.
