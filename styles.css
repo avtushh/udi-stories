@@ -25,6 +25,13 @@ img, svg { max-width: 100%; }
   border-bottom: 1px solid var(--line);
 }
 body[data-page="home"] .top { position: sticky; top: 0; }
+.top-back {
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 36px; height: 36px; margin-inline-end: -6px; padding: 0;
+  background: transparent; color: var(--orange); border: 0;
+}
+.top-back[hidden] { display: none; }
+.top-back svg { width: 22px; height: 22px; }
 .logo {
   background: none; border: 0; padding: 0;
   color: var(--orange); font-weight: 800; font-size: 28px; letter-spacing: -0.04em;
@@ -157,14 +164,13 @@ main { padding: 28px 32px 80px; max-width: 1240px; margin: 0 auto; }
 .mark { background: #ffe08a; border-radius: 2px; }
 
 .reader { max-width: 640px; margin: 0 auto; padding-top: 8px; }
-.story-bar {
-  position: sticky; top: 0; z-index: 16;
+.story-bar { display: none; }
+.reader.collapsed .story-bar {
+  position: fixed; top: 0; z-index: 16;
   display: flex; align-items: center; gap: 10px;
-  min-height: 44px; margin: 0 0 8px; padding: 6px 0;
-  background: #fff;
+  min-height: 44px; padding: 6px 0;
+  background: #fff; box-shadow: 0 1px 0 var(--line);
 }
-.reader.collapsed .story-bar { box-shadow: 0 1px 0 var(--line); }
-.reader.collapsed .back { position: relative; border-color: transparent; background: transparent; padding: 8px; }
 .bar-title {
   display: none; min-width: 0; margin: 0;
   font-size: 17px; font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;
@@ -172,12 +178,11 @@ main { padding: 28px 32px 80px; max-width: 1240px; margin: 0 auto; }
 }
 .reader.collapsed .bar-title { display: block; flex: 1; }
 .back {
-  display: inline-flex; align-items: center; gap: 4px; flex: none;
-  background: #fff; color: var(--orange); border: 1px solid #ffd5c6;
-  font-weight: 700; font-size: 14px; padding: 8px 12px; border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 36px; height: 36px; padding: 0;
+  background: transparent; color: var(--orange); border: 0;
 }
-.back svg { width: 18px; height: 18px; flex: none; }
-.reader.collapsed .back span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.back svg { width: 22px; height: 22px; }
 .story-top { display: flex; gap: 18px; align-items: flex-start; margin: 16px 0 22px; min-width: 0; }
 .story-top > div { min-width: 0; flex: 1; }
 .byline, .blurb, .story-top h1, .kicker, .cover span { overflow-wrap: anywhere; }
@@ -186,7 +191,7 @@ main { padding: 28px 32px 80px; max-width: 1240px; margin: 0 auto; }
 .byline { margin: 0 0 10px; color: var(--muted); }
 .byline b { color: var(--orange); font-weight: 700; }
 .kicker { color: var(--muted); font-size: 13px; margin: 0 0 4px; }
-.read-time { margin: 0 0 4px; color: var(--orange); font-weight: 700; font-size: 14px; }
+.read-time { margin: 12px 0 0; color: var(--orange); font-weight: 700; font-size: 14px; }
 .written { margin: 32px 0 0; color: var(--muted); font-size: 15px; }
 .year { margin: 26px 0 12px; font-size: 15px; font-weight: 800; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 6px; }
 .card .by { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -277,13 +282,12 @@ main { padding: 28px 32px 80px; max-width: 1240px; margin: 0 auto; }
   .shelf-h h2 { font-size: 18px; }
   .map-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .map-card p { display: none; }
-  .story-top { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 8px 14px; }
-  .story-top > div:not(.cover) { display: contents; }
-  .story-top .cover { grid-column: 1; grid-row: 1 / span 3; width: 100%; }
-  .read-time, .title-row, .byline { grid-column: 2; }
-  .blurb, .story-top .chips, .reader-tools { grid-column: 1 / -1; }
-  .story-top h1 { font-size: 24px; }
-  .story-top .chips { margin: 4px 0 0; flex-wrap: wrap; overflow: visible; }
+  .reader { padding-top: 0; }
+  .story-top { gap: 14px; margin: 0 0 16px; }
+  .story-top .cover { width: 108px; }
+  .story-top h1 { font-size: 26px; }
+  .byline { margin: 0 0 8px; }
+  .blurb { margin: 0 0 8px; }
   .body p { font-size: var(--read, 18px); }
   .reader-tools { font-size: 20px; gap: 12px; }
   .reader-tools button { width: 66px; height: 66px; font-size: 22px; }

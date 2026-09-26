@@ -406,13 +406,12 @@ function renderStory(keepPlace) {
   app.innerHTML = `
     <article class="reader">
       <div class="story-bar">
-        <button class="back" id="back" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>חזרה לספרייה</span></button>
+        <button class="back" id="back" type="button" aria-label="חזרה לספרייה"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <p class="bar-title" aria-hidden="true">${esc(s.title)}</p>
       </div>
       <div class="story-top">
         <div class="cover">${illustration(s)}</div>
         <div>
-          <p class="read-time">${readingLabel(s.text)}</p>
           <div class="title-row">
             <h1>${esc(s.title)}</h1>
             ${signedIn && addedSlugs.has(s.slug) ? `<button type="button" class="edit-story" id="edit-story" aria-label="עריכה"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.2 6.8l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : ""}
@@ -422,6 +421,7 @@ function renderStory(keepPlace) {
           <div class="chips" style="margin:0">
             ${tags.map((t, i) => `<button class="tag${i < shared.length ? " shared" : ""}" data-tag="${esc(t)}" type="button">${esc(t)}</button>`).join("")}
           </div>
+          <p class="read-time">${readingLabel(s.text)}</p>
         </div>
       </div>
       <div class="reader-tools">
@@ -468,23 +468,41 @@ function renderStory(keepPlace) {
 }
 
 function watchStoryTitle() {
-  if (watchStoryTitle.onScroll) window.removeEventListener("scroll", watchStoryTitle.onScroll);
+  if (watchStoryTitle.onScroll) {
+    window.removeEventListener("scroll", watchStoryTitle.onScroll);
+    window.removeEventListener("resize", watchStoryTitle.onScroll);
+  }
   const reader = document.querySelector(".reader");
   const title = document.querySelector(".story-top h1");
   const bar = document.querySelector(".story-bar");
   if (!reader || !title || !bar) return;
   const past = () => {
-    reader.classList.toggle("collapsed", title.getBoundingClientRect().top < bar.offsetHeight);
+    reader.classList.toggle("collapsed", title.getBoundingClientRect().top < 8);
+    if (reader.classList.contains("collapsed")) {
+      const box = reader.getBoundingClientRect();
+      bar.style.left = box.left + "px";
+      bar.style.width = box.width + "px";
+    }
+    syncTopBack();
   };
   watchStoryTitle.onScroll = past;
   window.addEventListener("scroll", past, { passive: true });
+  window.addEventListener("resize", past);
   past();
+}
+
+function syncTopBack() {
+  const btn = document.getElementById("top-back");
+  if (!btn) return;
+  const collapsed = document.querySelector(".reader")?.classList.contains("collapsed");
+  btn.hidden = mode !== "story" || !!collapsed;
 }
 
 function render(keepScroll) {
   document.body.dataset.page = mode;
   if (mode !== "story" && watchStoryTitle.onScroll) {
     window.removeEventListener("scroll", watchStoryTitle.onScroll);
+    window.removeEventListener("resize", watchStoryTitle.onScroll);
     watchStoryTitle.onScroll = null;
   }
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("on", b.dataset.go === (mode === "story" ? "home" : mode)));
@@ -493,6 +511,7 @@ function render(keepScroll) {
   else renderHome();
   bind();
   syncHeaderHeight();
+  syncTopBack();
   if (!keepScroll) window.scrollTo(0, 0);
 }
 
@@ -570,6 +589,7 @@ if (!document.getElementById("app")) {
   // Editor page reuses the icon list without drawing the library.
 } else {
 document.getElementById("logo").onclick = () => go("home");
+document.getElementById("top-back").onclick = () => go("home");
 document.querySelectorAll(".nav-btn[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
 document.getElementById("search-form").onsubmit = e => e.preventDefault();
 q.oninput = () => {
