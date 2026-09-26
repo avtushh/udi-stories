@@ -11,18 +11,19 @@
   --sans: "Rubik", "Arial Hebrew", Arial, sans-serif;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); overflow-x: hidden; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); overflow-x: clip; }
 button, input { font-family: inherit; }
 button { cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 img, svg { max-width: 100%; }
 
 .top {
-  position: sticky; top: 0; z-index: 20;
+  position: relative; z-index: 20;
   display: flex; align-items: center; gap: 18px;
   height: 64px; padding: 0 28px;
   background: #fff;
   border-bottom: 1px solid var(--line);
 }
+body[data-page="home"] .top { position: sticky; top: 0; }
 .logo {
   background: none; border: 0; padding: 0;
   color: var(--orange); font-weight: 800; font-size: 28px; letter-spacing: -0.04em;
@@ -56,7 +57,13 @@ main { padding: 28px 32px 80px; max-width: 1240px; margin: 0 auto; }
 }
 .orange-btn:hover { background: var(--orange-d); }
 
-.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin: 14px 0 6px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin: 0; }
+.pin {
+  position: sticky; top: var(--top-h, 64px); z-index: 12;
+  background: #fff;
+  margin: 0 -32px 6px; padding: 10px 32px 8px;
+  box-shadow: 0 1px 0 var(--line);
+}
 .chip, .tag {
   border: 0; background: var(--chip); color: #333; border-radius: 999px;
   padding: 5px 11px; font-size: 13px; font-weight: 500; white-space: nowrap;
@@ -112,7 +119,27 @@ main { padding: 28px 32px 80px; max-width: 1240px; margin: 0 auto; }
 .mark { background: #ffe08a; border-radius: 2px; }
 
 .reader { max-width: 640px; margin: 0 auto; padding-top: 8px; }
-.back { background: none; border: 0; color: var(--orange); font-weight: 700; font-size: 14px; padding: 0; }
+.story-bar {
+  position: sticky; top: 0; z-index: 16;
+  display: flex; align-items: center; gap: 10px;
+  min-height: 44px; margin: 0 0 8px; padding: 6px 0;
+  background: #fff;
+}
+.reader.collapsed .story-bar { box-shadow: 0 1px 0 var(--line); }
+.reader.collapsed .back { position: relative; border-color: transparent; background: transparent; padding: 8px; }
+.bar-title {
+  display: none; min-width: 0; margin: 0;
+  font-size: 17px; font-weight: 800; line-height: 1.25; letter-spacing: -0.02em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.reader.collapsed .bar-title { display: block; flex: 1; }
+.back {
+  display: inline-flex; align-items: center; gap: 4px; flex: none;
+  background: #fff; color: var(--orange); border: 1px solid #ffd5c6;
+  font-weight: 700; font-size: 14px; padding: 8px 12px; border-radius: 999px;
+}
+.back svg { width: 18px; height: 18px; flex: none; }
+.reader.collapsed .back span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .story-top { display: flex; gap: 18px; align-items: flex-start; margin: 16px 0 22px; min-width: 0; }
 .story-top > div { min-width: 0; flex: 1; }
 .byline, .blurb, .story-top h1, .kicker, .cover span { overflow-wrap: anywhere; }
@@ -153,6 +180,7 @@ main { padding: 28px 32px 80px; max-width: 1240px; margin: 0 auto; }
 }
 .body { border-top: 1px solid var(--line); padding-top: 22px; }
 .body p { font-family: "Frank Ruhl Libre", "David Libre", serif; font-size: var(--read, 21px); line-height: 1.8; margin: 0 0 1em; color: #1f1a16; text-wrap: pretty; }
+.body p.written { color: #8a847c; }
 .reader-tools { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; color: var(--muted); font-size: 13px; }
 .reader-tools span { margin-left: 4px; }
 .reader-tools button {
@@ -202,6 +230,7 @@ main { padding: 28px 32px 80px; max-width: 1240px; margin: 0 auto; }
   .page-head h1 { font-size: 26px; }
   .page-head p { font-size: 15px; }
   .head-row { flex-wrap: wrap; align-items: flex-start; margin-bottom: 8px; }
+  .pin { margin-inline: -16px; padding-inline: 16px; }
   .orange-btn { min-height: 44px; }
   .row { grid-template-columns: repeat(3, 1fr); gap: 22px 16px; }
   .row.scroll { gap: 18px; }

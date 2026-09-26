@@ -255,10 +255,10 @@ function renderHome() {
         <button class="orange-btn" id="random" type="button">סיפור אקראי</button>
       </div>
     </div>
-    <div class="chips">
+    <div class="pin"><div class="chips">
       <button class="chip ${theme ? "" : "on"}" data-theme="">הכול</button>
       ${Object.keys(THEMES).map(name => `<button class="chip ${theme === name ? "on" : ""}" data-theme="${esc(name)}">${esc(name)}</button>`).join("")}
-    </div>
+    </div></div>
     ${view === "cards" && sortMode !== "date" && !query.trim() && !theme ? shelves : ""}
     <section class="shelf">
       <div class="shelf-h"><h2>${gridTitle}</h2><span style="color:#757575;font-size:14px">${list.length}</span></div>
@@ -341,7 +341,10 @@ function renderStory() {
   const parts = paragraphs(s);
   app.innerHTML = `
     <article class="reader">
-      <button class="back" id="back" type="button">חזרה לספרייה</button>
+      <div class="story-bar">
+        <button class="back" id="back" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>חזרה לספרייה</span></button>
+        <p class="bar-title" aria-hidden="true">${esc(s.title)}</p>
+      </div>
       <div class="story-top">
         <div class="cover">${illustration(s)}</div>
         <div>
@@ -388,16 +391,42 @@ function renderStory() {
     });
     details.addEventListener("toggle", () => blurb.classList.remove("tip-on"));
   }
+  watchStoryTitle();
   window.scrollTo(0, 0);
 }
 
+function watchStoryTitle() {
+  if (watchStoryTitle.onScroll) window.removeEventListener("scroll", watchStoryTitle.onScroll);
+  const reader = document.querySelector(".reader");
+  const title = document.querySelector(".story-top h1");
+  const bar = document.querySelector(".story-bar");
+  if (!reader || !title || !bar) return;
+  const past = () => {
+    reader.classList.toggle("collapsed", title.getBoundingClientRect().top < bar.offsetHeight);
+  };
+  watchStoryTitle.onScroll = past;
+  window.addEventListener("scroll", past, { passive: true });
+  past();
+}
+
 function render(keepScroll) {
+  document.body.dataset.page = mode;
+  if (mode !== "story" && watchStoryTitle.onScroll) {
+    window.removeEventListener("scroll", watchStoryTitle.onScroll);
+    watchStoryTitle.onScroll = null;
+  }
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("on", b.dataset.go === (mode === "story" ? "home" : mode)));
   if (mode === "map") renderMap();
   else if (mode === "story") renderStory();
   else renderHome();
   bind();
+  syncHeaderHeight();
   if (!keepScroll) window.scrollTo(0, 0);
+}
+
+function syncHeaderHeight() {
+  const bar = document.querySelector(".top");
+  if (bar) document.documentElement.style.setProperty("--top-h", bar.offsetHeight + "px");
 }
 
 function bind() {
@@ -460,6 +489,7 @@ function fromHash() {
   else if (h === "#/map") mode = "map";
   else mode = "home";
 }
+window.addEventListener("resize", syncHeaderHeight);
 window.addEventListener("hashchange", () => { fromHash(); render(); });
 fromHash();
 render();
