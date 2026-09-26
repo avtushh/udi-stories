@@ -39,6 +39,8 @@ The full header stays only while the story is still at the top of the page. A ri
 
 Inside the card the order is title, author, synopsis, tags, then reading time. Phone and desktop use the same side-by-side cover layout. The phone cover is just smaller.
 
+**סיפורים אחרונים** are the stories opened in this browser tab. They disappear when the tab closes. **סיפורים שקראתי** stay on this browser until the reader presses **לא קראתי**. Opening a story does not mark it as read. Both are buttons in the library toolbar, and they use the same list or cards view as the rest of the stories.
+
 ## Publish
 
 Push `main` to this repository. GitHub Pages rebuilds https://avtushh.github.io/udi-stories/ from that branch.

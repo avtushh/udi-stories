@@ -108,6 +108,30 @@ let query = "";
 let openSlug = "";
 let view = localStorage.getItem("aba-view") === "list" ? "list" : "cards";
 let sortMode = localStorage.getItem("aba-sort") === "date" ? "date" : "alpha";
+let libraryList = "all";
+function storedSlugs(store, key) {
+  try {
+    const list = JSON.parse(store.getItem(key) || "[]");
+    if (!Array.isArray(list)) return [];
+    const known = new Set(stories.map(s => s.slug));
+    return list.filter(slug => known.has(slug));
+  } catch { return []; }
+}
+function storiesFrom(slugs) {
+  return slugs.map(slug => bySlug[slug]).filter(Boolean);
+}
+function rememberRecent(slug) {
+  const next = [slug, ...storedSlugs(sessionStorage, "aba-recent").filter(id => id !== slug)].slice(0, 12);
+  sessionStorage.setItem("aba-recent", JSON.stringify(next));
+}
+function setRead(slug, on) {
+  const next = storedSlugs(localStorage, "aba-read").filter(id => id !== slug);
+  if (on) next.unshift(slug);
+  localStorage.setItem("aba-read", JSON.stringify(next));
+}
+function isRead(slug) {
+  return storedSlugs(localStorage, "aba-read").includes(slug);
+}
 let signedIn = false;
 let openEditor = () => {};
 function ordered(list) {
@@ -208,10 +232,11 @@ function illustration(s) {
   return `<svg viewBox="0 0 80 120" aria-hidden="true"><rect width="80" height="120" fill="#f4efe4"/>${drawings[index]}</svg>`;
 }
 function card(s, queryText) {
+  const read = isRead(s.slug) ? " · נקרא" : "";
   return `<button class="card" data-slug="${s.slug}">
     <div class="cover">${illustration(s)}</div>
     <h3>${highlight(s.title, queryText)}</h3>
-    <p class="by">${esc(s.primary || "סיפור")} · ${readingMinutes(s.text)} דק׳</p>
+    <p class="by">${esc(s.primary || "סיפור")} · ${readingMinutes(s.text)} דק׳${read}</p>
     <p class="hook">${highlight(s.hook || "", queryText)}</p>
   </button>`;
 }
@@ -227,7 +252,10 @@ function byYear(list) {
 }
 
 function renderHome() {
-  const list = ordered(stories.filter(matches));
+  const picked = libraryList === "recent" ? storiesFrom(storedSlugs(sessionStorage, "aba-recent"))
+    : libraryList === "read" ? storiesFrom(storedSlugs(localStorage, "aba-read"))
+    : null;
+  const list = picked || ordered(stories.filter(matches));
   const shelves = theme
     ? ""
     : Object.keys(THEMES).map(name => {
@@ -239,9 +267,17 @@ function renderHome() {
         </section>`;
       }).join("");
 
-  const gridTitle = query.trim()
+  const gridTitle = picked
+    ? (libraryList === "recent" ? "סיפורים אחרונים" : "סיפורים שקראתי")
+    : query.trim()
     ? `תוצאות עבור „${esc(query.trim())}”`
     : (theme ? theme : (sortMode === "date" ? "לפי תאריך כתיבה" : "כל הסיפורים"));
+  const rows = sortMode === "date" && !picked
+    ? byYear(list).map(([year, items]) => `<h3 class="year">${year}</h3><div class="row${view === "list" ? " as-list" : ""}">${items.map(s => card(s, query.trim())).join("")}</div>`).join("")
+    : `<div class="row${view === "list" ? " as-list" : ""}">${list.map(s => card(s, query.trim())).join("")}</div>`;
+  const empty = picked
+    ? (libraryList === "recent" ? "עוד לא נפתח סיפור בביקור הזה." : "עוד לא סימנת סיפור כנקרא.")
+    : "אין סיפור עם המילה הזו. נסו שם, מקום, או משפט קצר.";
 
   app.innerHTML = `
     <div class="page-head head-row">
@@ -249,6 +285,11 @@ function renderHome() {
         <p>${stories.length} סיפורים מאת אודי גבריאלי</p>
       </div>
       <div class="actions">
+        <div class="view-toggle" role="group" aria-label="רשימות">
+          <button type="button" data-library="all" class="${libraryList === "all" ? "on" : ""}">הכול</button>
+          <button type="button" data-library="recent" class="${libraryList === "recent" ? "on" : ""}">סיפורים אחרונים</button>
+          <button type="button" data-library="read" class="${libraryList === "read" ? "on" : ""}">סיפורים שקראתי</button>
+        </div>
         <div class="view-toggle" role="group" aria-label="מיון">
           <button type="button" data-sort="alpha" class="${sortMode === "alpha" ? "on" : ""}">א״ב</button>
           <button type="button" data-sort="date" class="${sortMode === "date" ? "on" : ""}">כרונולוגי</button>
@@ -261,13 +302,13 @@ function renderHome() {
       </div>
     </div>
     <div class="pin"><div class="chips">
-      <button class="chip ${theme ? "" : "on"}" data-theme="">הכול</button>
+      <button class="chip ${!theme && libraryList === "all" ? "on" : ""}" data-theme="">הכול</button>
       ${Object.keys(THEMES).map(name => `<button class="chip ${theme === name ? "on" : ""}" data-theme="${esc(name)}">${esc(name)}</button>`).join("")}
     </div></div>
-    ${view === "cards" && sortMode !== "date" && !query.trim() && !theme ? shelves : ""}
+    ${!picked && view === "cards" && sortMode !== "date" && !query.trim() && !theme ? shelves : ""}
     <section class="shelf">
       <div class="shelf-h"><h2>${gridTitle}</h2><span style="color:#757575;font-size:14px">${list.length}</span></div>
-      ${list.length ? `${sortMode === "date" ? byYear(list).map(([year, items]) => `<h3 class="year">${year}</h3><div class="row${view === "list" ? " as-list" : ""}">${items.map(s => card(s, query.trim())).join("")}</div>`).join("") : `<div class="row${view === "list" ? " as-list" : ""}">${list.map(s => card(s, query.trim())).join("")}</div>`}` : `<p class="empty">אין סיפור עם המילה הזו. נסו שם, מקום, או משפט קצר.</p>`}
+      ${list.length ? rows : `<p class="empty">${empty}</p>`}
     </section>`;
 }
 
@@ -395,6 +436,8 @@ function renderStory(keepPlace) {
   const place = keepPlace ? textPlace() : null;
   const s = bySlug[openSlug];
   if (!s) { mode = "home"; render(); return; }
+  if (!keepPlace) rememberRecent(s.slug);
+  const read = isRead(s.slug);
   const related = stories.filter(x => x.slug !== s.slug && (x.primary === s.primary || (s.keywords || []).some(k => (x.keywords || []).includes(k)))).slice(0, 6);
   const allTags = tagsFor(s);
   const shared = [...allTags.filter(tag => !tag.name).slice(0, 6), ...allTags.filter(tag => tag.name).slice(0, 4)];
@@ -417,6 +460,10 @@ function renderStory(keepPlace) {
             ${signedIn && addedSlugs.has(s.slug) ? `<button type="button" class="edit-story" id="edit-story" aria-label="עריכה"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.2 6.8l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : ""}
           </div>
           <p class="byline">מאת <b>אודי גבריאלי</b></p>
+          <div class="view-toggle read-toggle" role="group" aria-label="סימון קריאה">
+            <button type="button" id="mark-unread" class="${read ? "" : "on"}">לא קראתי</button>
+            <button type="button" id="mark-read" class="${read ? "on" : ""}">קראתי</button>
+          </div>
           ${s.synopsis ? `<div class="blurb"><details><summary>תקציר</summary><p>${esc(s.synopsis)}</p></details><div class="tip" role="tooltip">${esc(s.synopsis)}</div></div>` : ""}
           <div class="chips" style="margin:0">
             ${tags.map((t, i) => `<button class="tag${i < shared.length ? " shared" : ""}" data-tag="${esc(t)}" type="button">${esc(t)}</button>`).join("")}
@@ -436,6 +483,13 @@ function renderStory(keepPlace) {
       ${related.length ? `<section class="more"><h2>עוד באותו נושא</h2><div class="row">${related.map(x => card(x, "")).join("")}</div></section>` : ""}
     </article>`;
   document.getElementById("back").onclick = () => go("home");
+  const mark = on => {
+    setRead(s.slug, on);
+    document.getElementById("mark-read").classList.toggle("on", on);
+    document.getElementById("mark-unread").classList.toggle("on", !on);
+  };
+  document.getElementById("mark-read").onclick = () => mark(true);
+  document.getElementById("mark-unread").onclick = () => mark(false);
   const editStory = document.getElementById("edit-story");
   if (editStory) editStory.onclick = () => openEditor(s);
   document.getElementById("smaller").onclick = () => { readSize = Math.max(16, readSize - 2); renderStory(true); };
@@ -525,13 +579,14 @@ function bind() {
     el.onclick = () => { openSlug = el.dataset.slug; mode = "story"; history.replaceState(null, "", "#/s/" + openSlug); render(); };
   });
   app.querySelectorAll("[data-theme]").forEach(el => {
-    el.onclick = () => { theme = el.dataset.theme; query = ""; q.value = ""; mode = "home"; history.replaceState(null, "", theme ? "#/t/" + encodeURIComponent(theme) : "#/"); render(); };
+    el.onclick = () => { theme = el.dataset.theme; query = ""; q.value = ""; libraryList = "all"; mode = "home"; history.replaceState(null, "", theme ? "#/t/" + encodeURIComponent(theme) : "#/"); render(); };
   });
   app.querySelectorAll("[data-tag]").forEach(el => {
     el.onclick = () => {
       const tag = el.dataset.tag;
       if (THEMES[tag]) { theme = tag; query = ""; q.value = ""; }
       else { theme = ""; query = tag; q.value = tag; }
+      libraryList = "all";
       mode = "home";
       render();
     };
@@ -547,6 +602,14 @@ function bind() {
     el.onclick = () => {
       view = el.dataset.view;
       localStorage.setItem("aba-view", view);
+      render(true);
+    };
+  });
+  app.querySelectorAll("[data-library]").forEach(el => {
+    el.onclick = () => {
+      libraryList = el.dataset.library;
+      if (libraryList !== "all") { theme = ""; query = ""; q.value = ""; history.replaceState(null, "", "#/"); }
+      mode = "home";
       render(true);
     };
   });
@@ -595,6 +658,7 @@ document.getElementById("search-form").onsubmit = e => e.preventDefault();
 q.oninput = () => {
   query = q.value;
   theme = "";
+  libraryList = "all";
   mode = "home";
   render(true);
 };
@@ -602,7 +666,7 @@ q.oninput = () => {
 function fromHash() {
   const h = decodeURIComponent(location.hash || "");
   if (h.startsWith("#/s/")) { openSlug = h.slice(4); mode = "story"; }
-  else if (h.startsWith("#/t/")) { theme = h.slice(4); mode = "home"; }
+  else if (h.startsWith("#/t/")) { theme = h.slice(4); libraryList = "all"; mode = "home"; }
   else if (h === "#/map") mode = "map";
   else mode = "home";
 }
