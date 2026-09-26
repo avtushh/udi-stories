@@ -333,7 +333,66 @@ function paragraphs(s) {
   return out;
 }
 
-function renderStory() {
+function anchorLine() {
+  const bar = document.querySelector(".story-bar");
+  return (bar ? bar.getBoundingClientRect().bottom : 0) + 12;
+}
+function rangeAt(x, y) {
+  if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+  const pos = document.caretPositionFromPoint?.(x, y);
+  if (!pos) return null;
+  const range = document.createRange();
+  range.setStart(pos.offsetNode, pos.offset);
+  return range;
+}
+function textPlace() {
+  const body = document.querySelector(".body");
+  if (!body) return null;
+  const rect = body.getBoundingClientRect();
+  const x = rect.right - Math.min(48, rect.width / 2);
+  const y = anchorLine();
+  const range = rangeAt(x, y);
+  if (range && body.contains(range.startContainer)) {
+    const before = document.createRange();
+    before.selectNodeContents(body);
+    before.setEnd(range.startContainer, range.startOffset);
+    return { offset: before.toString().length };
+  }
+  const paras = [...body.querySelectorAll("p")];
+  if (!paras.length) return null;
+  let index = 0;
+  for (let i = 0; i < paras.length; i++) {
+    if (paras[i].getBoundingClientRect().bottom > y) { index = i; break; }
+    index = i;
+  }
+  const box = paras[index].getBoundingClientRect();
+  return { index, ratio: box.height ? (y - box.top) / box.height : 0 };
+}
+function restoreTextPlace(place) {
+  const body = document.querySelector(".body");
+  if (!body) return;
+  if (place.offset != null) {
+    const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+    let left = place.offset;
+    let node;
+    while ((node = walker.nextNode())) {
+      if (left <= node.textContent.length) break;
+      left -= node.textContent.length;
+    }
+    if (!node) return;
+    const range = document.createRange();
+    range.setStart(node, Math.min(left, node.textContent.length));
+    range.collapse(true);
+    window.scrollBy(0, range.getBoundingClientRect().top - anchorLine());
+    return;
+  }
+  const para = body.querySelectorAll("p")[place.index];
+  if (!para) return;
+  const box = para.getBoundingClientRect();
+  window.scrollBy(0, box.top + place.ratio * box.height - anchorLine());
+}
+function renderStory(keepPlace) {
+  const place = keepPlace ? textPlace() : null;
   const s = bySlug[openSlug];
   if (!s) { mode = "home"; render(); return; }
   const related = stories.filter(x => x.slug !== s.slug && (x.primary === s.primary || (s.keywords || []).some(k => (x.keywords || []).includes(k)))).slice(0, 6);
@@ -379,8 +438,8 @@ function renderStory() {
   document.getElementById("back").onclick = () => go("home");
   const editStory = document.getElementById("edit-story");
   if (editStory) editStory.onclick = () => openEditor(s);
-  document.getElementById("smaller").onclick = () => { readSize = Math.max(16, readSize - 2); renderStory(); };
-  document.getElementById("larger").onclick = () => { readSize = Math.min(28, readSize + 2); renderStory(); };
+  document.getElementById("smaller").onclick = () => { readSize = Math.max(16, readSize - 2); renderStory(true); };
+  document.getElementById("larger").onclick = () => { readSize = Math.min(28, readSize + 2); renderStory(true); };
   const blurb = document.querySelector(".blurb");
   if (blurb && matchMedia("(hover: hover) and (pointer: fine)").matches) {
     const summary = blurb.querySelector("summary");
@@ -402,7 +461,10 @@ function renderStory() {
     details.addEventListener("toggle", () => blurb.classList.remove("tip-on"));
   }
   watchStoryTitle();
-  window.scrollTo(0, 0);
+  if (place) {
+    restoreTextPlace(place);
+    if (watchStoryTitle.onScroll) watchStoryTitle.onScroll();
+  } else window.scrollTo(0, 0);
 }
 
 function watchStoryTitle() {
@@ -528,6 +590,7 @@ window.addEventListener("resize", syncHeaderHeight);
 window.addEventListener("hashchange", () => { fromHash(); render(); });
 fromHash();
 render();
+const localSite = location.hostname === "127.0.0.1" || location.hostname === "localhost";
 const auth = document.getElementById("auth");
 const addOpen = document.getElementById("add-open");
 const logout = document.getElementById("logout");
@@ -536,12 +599,12 @@ const addPop = document.getElementById("add-pop");
 const addForm = document.getElementById("add");
 
 function showSession(on) {
-  if (auth) auth.hidden = on;
+  if (auth) auth.hidden = !localSite || on;
   if (addOpen) addOpen.hidden = !on;
   if (logout) logout.hidden = !on;
 }
 
-fetch("/api/me").then(me => {
+if (localSite) fetch("/api/me").then(me => {
   signedIn = me.ok;
   showSession(me.ok);
   if (mode === "story") render();
@@ -551,7 +614,7 @@ fetch("/api/me").then(me => {
     login.showModal();
   }
 });
-if (auth && login) auth.onclick = () => login.showModal();
+if (localSite && auth && login) auth.onclick = () => login.showModal();
 if (logout) logout.onclick = async () => {
   await fetch("/api/logout", { method: "POST" });
   location.reload();
