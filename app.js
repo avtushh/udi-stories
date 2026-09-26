@@ -29,7 +29,8 @@ const COVERS = [
   ["#b4234a", "#ffb4a2"]
 ];
 
-const stories = (window.STORIES || []).slice().sort((a, b) => a.title.localeCompare(b.title, "he"));
+const addedSlugs = new Set((window.ADDED_STORIES || []).map(s => s.slug));
+const stories = [...(window.STORIES || []), ...(window.ADDED_STORIES || [])].sort((a, b) => a.title.localeCompare(b.title, "he"));
 const bySlug = Object.fromEntries(stories.map(s => [s.slug, s]));
 
 function clean(s) {
@@ -107,6 +108,8 @@ let query = "";
 let openSlug = "";
 let view = localStorage.getItem("aba-view") === "list" ? "list" : "cards";
 let sortMode = localStorage.getItem("aba-sort") === "date" ? "date" : "alpha";
+let signedIn = false;
+let openEditor = () => {};
 function ordered(list) {
   return list.slice().sort((a, b) => {
     if (sortMode === "date") {
@@ -169,6 +172,7 @@ function illustration(s) {
   }
   const n = illustration.variants[s.slug] || 0;
   const shift = [...(s.primary || "")].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+  illustration.size = 27;
   const g = (body) => `<g fill="none" stroke="${ink}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${body}</g>`;
   const drawings = [
     g(`<path d="M28 104V46h24v58M28 46h24M34 58h12M34 68h8"/>`) + `<circle cx="40" cy="96" r="3" fill="${red}"/>`,
@@ -199,7 +203,8 @@ function illustration(s) {
     g(`<path d="M28 28v64M22 28h20M24 100h36M40 92V70"/>`),
     g(`<path d="M12 80h56M16 80V48h10v32M32 80V40h10v40M48 80V56h10v24M12 48h56"/>`)
   ];
-  const index = (n + shift) % drawings.length;
+  illustration.size = drawings.length;
+  const index = Number.isInteger(s.icon) ? ((s.icon % drawings.length) + drawings.length) % drawings.length : (n + shift) % drawings.length;
   return `<svg viewBox="0 0 80 120" aria-hidden="true"><rect width="80" height="120" fill="#f4efe4"/>${drawings[index]}</svg>`;
 }
 function card(s, queryText) {
@@ -349,7 +354,10 @@ function renderStory() {
         <div class="cover">${illustration(s)}</div>
         <div>
           <p class="read-time">${readingLabel(s.text)}</p>
-          <h1>${esc(s.title)}</h1>
+          <div class="title-row">
+            <h1>${esc(s.title)}</h1>
+            ${signedIn && addedSlugs.has(s.slug) ? `<button type="button" class="edit-story" id="edit-story" aria-label="עריכה"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.2 6.8l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : ""}
+          </div>
           <p class="byline">מאת <b>אודי גבריאלי</b></p>
           ${s.synopsis ? `<div class="blurb"><details><summary>תקציר</summary><p>${esc(s.synopsis)}</p></details><div class="tip" role="tooltip">${esc(s.synopsis)}</div></div>` : ""}
           <div class="chips" style="margin:0">
@@ -369,6 +377,8 @@ function renderStory() {
       ${related.length ? `<section class="more"><h2>עוד באותו נושא</h2><div class="row">${related.map(x => card(x, "")).join("")}</div></section>` : ""}
     </article>`;
   document.getElementById("back").onclick = () => go("home");
+  const editStory = document.getElementById("edit-story");
+  if (editStory) editStory.onclick = () => openEditor(s);
   document.getElementById("smaller").onclick = () => { readSize = Math.max(16, readSize - 2); renderStory(); };
   document.getElementById("larger").onclick = () => { readSize = Math.min(28, readSize + 2); renderStory(); };
   const blurb = document.querySelector(".blurb");
@@ -472,8 +482,33 @@ function go(next) {
   render();
 }
 
+window.UdiSite = {
+  themes: Object.keys(THEMES),
+  iconSvg: i => illustration({ slug: "preview", primary: "", icon: i }),
+  matchTags(text) {
+    const words = [];
+    const names = [];
+    for (const tag of sharedTags) {
+      if (!hasWord(text || "", tag.key)) continue;
+      (tag.name ? names : words).push(tag.display);
+    }
+    return { keywords: words, figures: names };
+  },
+  usedIcons(theme) {
+    const group = stories.filter(s => s.primary === theme).sort((a, b) => a.slug.localeCompare(b.slug));
+    const shift = [...theme].reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
+    const size = illustration.size || 27;
+    const used = new Set();
+    group.forEach((s, n) => used.add(Number.isInteger(s.icon) ? ((s.icon % size) + size) % size : (n + shift) % size));
+    return [...used];
+  }
+};
+
+if (!document.getElementById("app")) {
+  // Editor page reuses the icon list without drawing the library.
+} else {
 document.getElementById("logo").onclick = () => go("home");
-document.querySelectorAll(".nav-btn").forEach(b => b.onclick = () => go(b.dataset.go));
+document.querySelectorAll(".nav-btn[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
 document.getElementById("search-form").onsubmit = e => e.preventDefault();
 q.oninput = () => {
   query = q.value;
@@ -493,3 +528,159 @@ window.addEventListener("resize", syncHeaderHeight);
 window.addEventListener("hashchange", () => { fromHash(); render(); });
 fromHash();
 render();
+const auth = document.getElementById("auth");
+const addOpen = document.getElementById("add-open");
+const logout = document.getElementById("logout");
+const login = document.getElementById("login");
+const addPop = document.getElementById("add-pop");
+const addForm = document.getElementById("add");
+
+function showSession(on) {
+  if (auth) auth.hidden = on;
+  if (addOpen) addOpen.hidden = !on;
+  if (logout) logout.hidden = !on;
+}
+
+fetch("/api/me").then(me => {
+  signedIn = me.ok;
+  showSession(me.ok);
+  if (mode === "story") render();
+  if (!me.ok && new URLSearchParams(location.search).get("denied") && login) {
+    document.getElementById("login-msg").textContent = "הקישור לא בתוקף. אפשר לבקש חדש.";
+    history.replaceState(null, "", location.pathname);
+    login.showModal();
+  }
+});
+if (auth && login) auth.onclick = () => login.showModal();
+if (logout) logout.onclick = async () => {
+  await fetch("/api/logout", { method: "POST" });
+  location.reload();
+};
+let editingSlug = "";
+function prepareForm(story) {
+  const theme = document.getElementById("theme");
+  if (!theme.dataset.ready) {
+    theme.innerHTML = window.UdiSite.themes.map(name => `<option value="${name}">${name}</option>`).join("");
+    theme.dataset.ready = "1";
+  }
+  editingSlug = story ? story.slug : "";
+  document.getElementById("add-title").textContent = story ? "עריכת סיפור" : "סיפור חדש";
+  document.querySelector("label[for=file]").textContent = story ? "קובץ וורד, אם מחליפים את הטקסט" : "קובץ וורד";
+  document.getElementById("file").required = !story;
+  document.getElementById("file").value = "";
+  document.getElementById("add-delete").hidden = !story;
+  document.getElementById("add-save").textContent = story ? "שמירת שינויים" : "שמירה לספרייה";
+  document.getElementById("title").value = story ? story.title : "";
+  document.getElementById("when").value = story ? story.date || "" : "";
+  document.getElementById("synopsis").value = story ? story.synopsis || "" : "";
+  document.getElementById("text").value = story ? story.text : "";
+  if (story) theme.value = story.primary;
+  document.getElementById("save-msg").textContent = "";
+  addPop.showModal();
+}
+openEditor = prepareForm;
+if (addOpen && addPop) addOpen.onclick = () => prepareForm(null);
+if (addPop) {
+  addPop.addEventListener("click", (event) => { if (event.target === addPop) addPop.close(); });
+  document.getElementById("add-close").onclick = () => addPop.close();
+}
+if (login) {
+  login.addEventListener("click", (event) => { if (event.target === login) login.close(); });
+  document.getElementById("login-close").onclick = () => login.close();
+  document.getElementById("login-form").onsubmit = async (event) => {
+    event.preventDefault();
+    const msg = document.getElementById("login-msg");
+    msg.className = "msg";
+    msg.textContent = "";
+    const response = await fetch("/api/login/email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: document.getElementById("login-email").value.trim() }),
+    });
+    const data = await response.json().catch(() => ({}));
+    msg.className = "ok";
+    msg.textContent = data.message || "אם המייל מורשה, נשלח אליו קישור התחברות.";
+  };
+}
+if (addForm) {
+  document.getElementById("file").onchange = async () => {
+    const file = document.getElementById("file").files[0];
+    if (!file) return;
+    const msg = document.getElementById("save-msg");
+    msg.className = "msg";
+    msg.textContent = "קורא את הקובץ…";
+    const response = await fetch("/api/extract?name=" + encodeURIComponent(file.name), { method: "POST", body: file });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) { location.reload(); return; }
+    if (!response.ok) {
+      msg.textContent = data.error || "לא הצלחתי לקרוא את הקובץ";
+      return;
+    }
+    document.getElementById("title").value = data.title || "";
+    document.getElementById("text").value = data.text || "";
+    document.getElementById("when").value = data.date || "";
+    msg.textContent = "";
+  };
+  addForm.onsubmit = async (event) => {
+    event.preventDefault();
+    const msg = document.getElementById("save-msg");
+    msg.className = "msg";
+    const text = document.getElementById("text").value.trim();
+    const primary = document.getElementById("theme").value;
+    const tags = window.UdiSite.matchTags(text);
+    const when = document.getElementById("when").value;
+    const opening = text.split("\n").map(line => line.trim()).find(Boolean) || "";
+    let dateLabel = "";
+    if (when) {
+      const [year, month, day] = when.split("-");
+      dateLabel = `${+day}.${+month}.${year}`;
+    }
+    msg.textContent = "שומר…";
+    const response = await fetch(editingSlug ? "/api/update" : "/api/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        slug: editingSlug,
+        title: document.getElementById("title").value.trim(),
+        text,
+        primary,
+        icon: freeIcon(primary),
+        synopsis: document.getElementById("synopsis").value.trim(),
+        hook: opening.slice(0, 140),
+        date: when,
+        dateLabel,
+        keywords: tags.keywords,
+        figures: tags.figures,
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.status === 401) { location.reload(); return; }
+    if (!response.ok) {
+      msg.textContent = data.error || "השמירה נכשלה";
+      return;
+    }
+    location.href = "index.html#/s/" + data.slug;
+  };
+  document.getElementById("add-delete").onclick = async () => {
+    if (!editingSlug || !confirm("למחוק את הסיפור?")) return;
+    const response = await fetch("/api/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slug: editingSlug }),
+    });
+    if (response.ok) location.href = "index.html";
+    else {
+      const data = await response.json().catch(() => ({}));
+      const msg = document.getElementById("save-msg");
+      msg.className = "msg";
+      msg.textContent = data.error || "המחיקה נכשלה";
+    }
+  };
+}
+
+function freeIcon(theme) {
+  const used = new Set(window.UdiSite.usedIcons(theme));
+  for (let i = 0; i < 27; i++) if (!used.has(i)) return i;
+  return 0;
+}
+}

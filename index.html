@@ -31,10 +31,50 @@
   <nav class="nav">
     <button type="button" data-go="home" class="nav-btn on">הספרייה</button>
     <button type="button" data-go="map" class="nav-btn">נושאים ותגיות</button>
+    <button type="button" class="nav-btn" id="auth">התחברות</button>
+    <button type="button" class="nav-btn" id="add-open" hidden>+ הוספת סיפור</button>
+    <button type="button" class="nav-btn" id="logout" hidden>התנתקות</button>
   </nav>
 </header>
+<dialog id="login" class="login-pop">
+  <form id="login-form">
+    <h2>התחברות</h2>
+    <label for="login-email">מייל</label>
+    <input id="login-email" type="email" required autocomplete="email">
+    <p>אם המייל מורשה, יישלח אליו קישור חד-פעמי. הקישור נפתח במחשב שבו רץ האתר.</p>
+    <div class="row-actions">
+      <button class="orange-btn" type="submit">שליחת קישור</button>
+      <button type="button" class="nav-btn" id="login-close">סגור</button>
+    </div>
+    <p class="msg" id="login-msg"></p>
+  </form>
+</dialog>
+<dialog id="add-pop" class="login-pop add-pop">
+  <button type="button" class="pop-x" id="add-close" aria-label="סגור">×</button>
+  <form id="add">
+    <h2 id="add-title">סיפור חדש</h2>
+    <label for="file">קובץ וורד</label>
+    <input id="file" type="file" accept=".doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
+    <label for="title">כותרת</label>
+    <input id="title" type="text" required>
+    <label for="when">תאריך כתיבה</label>
+    <input id="when" type="date">
+    <label for="theme">קטגוריה</label>
+    <select id="theme" required></select>
+    <label for="synopsis">תקציר, אם רוצים. אפשר להשאיר ריק.</label>
+    <textarea id="synopsis"></textarea>
+    <label for="text">הסיפור</label>
+    <textarea id="text" required></textarea>
+    <div class="row-actions">
+      <button class="orange-btn" id="add-save" type="submit">שמירה לספרייה</button>
+      <button class="nav-btn" id="add-delete" type="button" hidden>מחיקה</button>
+      <span id="save-msg"></span>
+    </div>
+  </form>
+</dialog>
 <main id="app"></main>
 <script src="data/stories.js"></script>
+<script src="data/added.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
