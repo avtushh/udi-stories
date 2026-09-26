@@ -33,6 +33,12 @@ Open `http://127.0.0.1:8765/`. `python3 -m http.server` can show the pages, but 
 
 On localhost, logged out, the nav shows **התחברות**. Logged in, it shows **+ הוספת סיפור** and **התנתקות**. The published site does not show **התחברות**. GitHub Pages only serves the files; it does not run `serve.py`.
 
+## Reading a story
+
+The full header stays only while the story is still at the top of the page. A right arrow in that header row returns to the library. It does not sit on its own row above the story card. After scrolling, the header leaves and a bar shows the story name plus that same arrow.
+
+Inside the card the order is title, author, synopsis, tags, then reading time. Phone and desktop use the same side-by-side cover layout. The phone cover is just smaller.
+
 ## Publish
 
 Push `main` to this repository. GitHub Pages rebuilds https://avtushh.github.io/udi-stories/ from that branch.
