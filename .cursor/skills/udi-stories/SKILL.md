@@ -62,7 +62,7 @@ Hash only: `#/` library, `#/s/<slug>` story, `#/t/<theme>` theme filter, `#/map`
 - Cover drawings are ink illustrations. Within one `primary` theme, each story gets a different index until all 27 drawings are used.
 - Sort (`aba-sort`) and view (`aba-view`) persist in localStorage.
 - **סיפורים אחרונים** is this tab's session only (`sessionStorage` `aba-recent`, newest first, at most 12). Opening a story adds it. Closing the tab clears it.
-- **סיפורים שקראתי** persists in `localStorage` `aba-read`. Opening a story does not mark it read. On the story, **קראתי** / **לא קראתי** is the only way in or out. A read card shows `נקרא`.
+- **סיפורים שקראתי** persists in `localStorage` `aba-read`. Opening a story does not mark it read. On the story, **קראתי** / **לא קראתי** is the only way in or out. A read card shows `נקרא` and a small green check beside the title.
 - Those two lists are buttons in the library toolbar, beside א״ב / כרונולוגי, רשימה / כרטיסיות, and סיפור אקראי. They replace the story grid. They use the same list or cards view as the rest of the library. They are not separate shelves.
 
 ## Updating the live site

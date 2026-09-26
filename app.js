@@ -231,11 +231,14 @@ function illustration(s) {
   const index = Number.isInteger(s.icon) ? ((s.icon % drawings.length) + drawings.length) % drawings.length : (n + shift) % drawings.length;
   return `<svg viewBox="0 0 80 120" aria-hidden="true"><rect width="80" height="120" fill="#f4efe4"/>${drawings[index]}</svg>`;
 }
+function readMark() {
+  return `<span class="read-v" aria-label="נקרא"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.2l3.2 3.2L13 4.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+}
 function card(s, queryText) {
   const read = isRead(s.slug) ? " · נקרא" : "";
   return `<button class="card" data-slug="${s.slug}">
     <div class="cover">${illustration(s)}</div>
-    <h3>${highlight(s.title, queryText)}</h3>
+    <h3>${isRead(s.slug) ? readMark() : ""}${highlight(s.title, queryText)}</h3>
     <p class="by">${esc(s.primary || "סיפור")} · ${readingMinutes(s.text)} דק׳${read}</p>
     <p class="hook">${highlight(s.hook || "", queryText)}</p>
   </button>`;
@@ -450,13 +453,13 @@ function renderStory(keepPlace) {
     <article class="reader">
       <div class="story-bar">
         <button class="back" id="back" type="button" aria-label="חזרה לספרייה"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-        <p class="bar-title" aria-hidden="true">${esc(s.title)}</p>
+        <p class="bar-title" aria-hidden="true">${read ? readMark() : ""}${esc(s.title)}</p>
       </div>
       <div class="story-top">
         <div class="cover">${illustration(s)}</div>
         <div>
           <div class="title-row">
-            <h1>${esc(s.title)}</h1>
+            <h1>${read ? readMark() : ""}${esc(s.title)}</h1>
             ${signedIn && addedSlugs.has(s.slug) ? `<button type="button" class="edit-story" id="edit-story" aria-label="עריכה"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.2 6.8l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : ""}
           </div>
           <p class="byline">מאת <b>אודי גבריאלי</b></p>
@@ -487,6 +490,11 @@ function renderStory(keepPlace) {
     setRead(s.slug, on);
     document.getElementById("mark-read").classList.toggle("on", on);
     document.getElementById("mark-unread").classList.toggle("on", !on);
+    for (const el of [document.querySelector(".story-top h1"), document.querySelector(".bar-title")]) {
+      const tick = el.querySelector(".read-v");
+      if (on && !tick) el.insertAdjacentHTML("afterbegin", readMark());
+      if (!on && tick) tick.remove();
+    }
   };
   document.getElementById("mark-read").onclick = () => mark(true);
   document.getElementById("mark-unread").onclick = () => mark(false);
