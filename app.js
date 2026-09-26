@@ -285,7 +285,7 @@ function renderHome() {
   app.innerHTML = `
     <div class="page-head head-row">
       <div>
-        <p>${stories.length} סיפורים מאת אודי גבריאלי</p>
+        <p class="byline-row"><span>${stories.length} סיפורים מאת אודי גבריאלי</span><a class="globe" href="https://www.google.com/maps/d/viewer?mid=10ms6cbzXqtH6h_mj64L6jA4a1VLtD0A&amp;usp=sharing" target="_blank" rel="noopener" aria-label="מקומות מהסיפורים על המפה"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><ellipse cx="12" cy="12" rx="4" ry="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></a></p>
       </div>
       <div class="actions">
         <div class="view-toggle" role="group" aria-label="רשימות">

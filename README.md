@@ -39,6 +39,8 @@ The full header stays only while the story is still at the top of the page. A ri
 
 Inside the card the order is title, author, synopsis, tags, then reading time. Phone and desktop use the same side-by-side cover layout. The phone cover is just smaller.
 
+A small globe to the left of the story-count line opens the Google My Maps list of places from the stories. It is a viewer link, not the edit link.
+
 **סיפורים אחרונים** are the stories opened in this browser tab. They disappear when the tab closes. **סיפורים שקראתי** stay on this browser until the reader presses **לא קראתי**. Opening a story does not mark it as read. A read story shows a small green check beside its title. Both lists are buttons in the library toolbar, and they use the same list or cards view as the rest of the stories.
 
 ## Publish
