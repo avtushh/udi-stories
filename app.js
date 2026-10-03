@@ -666,7 +666,15 @@ function bind() {
     el.onclick = () => openStory(el.dataset.slug);
   });
   app.querySelectorAll("[data-theme]").forEach(el => {
-    el.onclick = () => { theme = el.dataset.theme; query = ""; q.value = ""; libraryList = "all"; mode = "home"; setHash(theme ? "#/t/" + encodeURIComponent(theme) : "#/"); };
+    el.onclick = () => {
+      const next = el.dataset.theme;
+      theme = next && next === theme ? "" : next;
+      query = "";
+      q.value = "";
+      libraryList = "all";
+      mode = "home";
+      setHash(theme ? "#/t/" + encodeURIComponent(theme) : "#/");
+    };
   });
   app.querySelectorAll("[data-tag]").forEach(el => {
     el.onclick = () => {

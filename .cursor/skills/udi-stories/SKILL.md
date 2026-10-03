@@ -61,7 +61,7 @@ The footer is a full-width warm-dark band (`#241e1a`), centered. Links live in `
 - Shared word tags: a keyword of 1–3 words, listed on at least 3 stories, and found as a whole word in at most 25% of story texts. Whole-word match (`hasWord`); final Hebrew letters are not folded there, niqqud is stripped.
 - Name tags: a `figures` entry on at least 2 stories, not a role (`notNames` in `app.js`). A name click matches the `figures` field, not a substring of the text. Names already used as word tags stay in the word list.
 - Tag browser is on `#/map`, under the themes: word tags, then a **שמות** group. Clicking a tag searches; clicking a theme name filters by theme.
-- Theme chips, shelves, and the topic map follow the key order of `THEMES` in `app.js`. The first five are קיבוץ ומקום, זהות וכפילות, אמנות וכתיבה, אבסורד וחלום, ילדות. Do not move מוות ואבל or זקנה ושיכחה back to the front.
+- Theme chips, shelves, and the topic map follow the key order of `THEMES` in `app.js`. The first five are קיבוץ ומקום, זהות וכפילות, אמנות וכתיבה, אבסורד וחלום, ילדות. Do not move מוות ואבל or זקנה ושיכחה back to the front. Clicking the selected theme chip again clears it and returns to הכול.
 - Cover drawings are ink illustrations. Within one `primary` theme, each story gets a different index until all 27 drawings are used.
 - The home subtitle has a small globe to its left. It opens the public Google My Maps viewer (`mid=10ms6cbzXqtH6h_mj64L6jA4a1VLtD0A`). Use the viewer URL, not the `/edit` URL. There is no extra sentence beside the subtitle.
 - **סיפורים אחרונים** is this tab's session only (`sessionStorage` `aba-recent`, newest first, at most 12). Opening a story adds it. Closing the tab clears it.
