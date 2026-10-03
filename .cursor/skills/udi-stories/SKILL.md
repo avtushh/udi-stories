@@ -39,7 +39,7 @@ Static Hebrew RTL site. No build step. `app.js` renders both catalogs. `styles.c
 
 Hash only: `#/` library, `#/s/<slug>` story, `#/t/<theme>` theme filter, `#/map` topics and tags, `#/legal` copyright and terms.
 
-The footer on every page is `© 2026 אודי גבריאלי. כל הזכויות שמורות.` plus a link to `#/legal` titled **זכויות יוצרים ותנאי שימוש**. On `#/legal` that link is hidden, and the header back arrow returns to the library. A quiet centered line under the footer says the site was created by אבנר גבריאלי. That credit is not a copyright claim. The copyright belongs to אודי גבריאלי. Do not name a publisher, and do not add legal text beyond what is already on that page. Do not add a cookie banner or a privacy policy unless the user asks after being told what data the site actually sends.
+The footer is a full-width warm-dark band (`#241e1a`), centered. Links live in `.site-foot-links` (today only **זכויות יוצרים ותנאי שימוש**; later mail or Facebook go there as extra anchors, not as a form). On `#/legal` that one link is hidden, and the header back arrow returns to the library. Under the links: `© 2026 אודי גבריאלי. כל הזכויות שמורות.` Then a quieter line that the site was created by אבנר גבריאלי. That credit is not a copyright claim. The copyright belongs to אודי גבריאלי. Do not name a publisher, and do not add legal text beyond what is already on that page. Do not add a cookie banner or a privacy policy unless the user asks after being told what data the site actually sends.
 
 ## Story fields
 

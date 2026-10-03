@@ -573,7 +573,7 @@ function syncTopBack() {
   if (!btn) return;
   const collapsed = document.querySelector(".reader")?.classList.contains("collapsed");
   btn.hidden = mode === "story" ? !!collapsed : mode !== "legal";
-  const terms = document.querySelector(".site-foot a");
+  const terms = document.querySelector(".site-foot-links a[href='#/legal']");
   if (terms) terms.hidden = mode === "legal";
 }
 

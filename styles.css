@@ -94,15 +94,17 @@ a.nav-btn { text-decoration: none; display: inline-flex; align-items: center; }
 
 main { padding: 28px 32px 24px; max-width: 1240px; margin: 0 auto; }
 .site-foot {
-  max-width: 1240px; margin: 0 auto;
-  padding: 4px 32px 28px;
-  color: var(--muted); font-size: 13px; line-height: 1.5;
+  width: 100%; margin: 40px 0 0;
+  padding: 36px 32px 28px;
+  background: #241e1a; color: #cfc6be;
+  text-align: center; font-size: 14px; line-height: 1.6;
 }
-.site-foot-legal { display: flex; flex-wrap: wrap; gap: 4px 14px; }
-.site-credit { margin: 14px 0 0; text-align: center; font-size: 12px; color: #a3a3a3; }
-.site-foot a { color: inherit; }
-.site-foot a[hidden] { display: none; }
-.site-foot a:hover { color: var(--orange); }
+.site-foot-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; }
+.site-foot-links a { color: #f3ece6; text-decoration: none; }
+.site-foot-links a[hidden] { display: none; }
+.site-foot-links a:hover { color: var(--orange); }
+.site-foot-legal { margin: 12px 0 0; font-size: 13px; color: #b7aea6; }
+.site-credit { margin: 8px 0 0; font-size: 12px; color: #8d847c; }
 .legal { max-width: 640px; margin-top: 22px; }
 .legal p { margin: 0 0 1em; font-size: 17px; line-height: 1.75; }
 
@@ -292,7 +294,8 @@ main { padding: 28px 32px 24px; max-width: 1240px; margin: 0 auto; }
     padding-right: calc(16px + env(safe-area-inset-right));
   }
   .site-foot {
-    padding: 4px 16px calc(20px + env(safe-area-inset-bottom));
+    margin-top: 28px;
+    padding: 28px 16px calc(22px + env(safe-area-inset-bottom));
     padding-left: calc(16px + env(safe-area-inset-left));
     padding-right: calc(16px + env(safe-area-inset-right));
   }
