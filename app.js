@@ -584,10 +584,10 @@ function syncHeaderHeight() {
 
 function bind() {
   app.querySelectorAll("[data-slug]").forEach(el => {
-    el.onclick = () => { openSlug = el.dataset.slug; mode = "story"; history.replaceState(null, "", "#/s/" + openSlug); render(); };
+    el.onclick = () => openStory(el.dataset.slug);
   });
   app.querySelectorAll("[data-theme]").forEach(el => {
-    el.onclick = () => { theme = el.dataset.theme; query = ""; q.value = ""; libraryList = "all"; mode = "home"; history.replaceState(null, "", theme ? "#/t/" + encodeURIComponent(theme) : "#/"); render(); };
+    el.onclick = () => { theme = el.dataset.theme; query = ""; q.value = ""; libraryList = "all"; mode = "home"; setHash(theme ? "#/t/" + encodeURIComponent(theme) : "#/"); };
   });
   app.querySelectorAll("[data-tag]").forEach(el => {
     el.onclick = () => {
@@ -616,7 +616,12 @@ function bind() {
   app.querySelectorAll("[data-library]").forEach(el => {
     el.onclick = () => {
       libraryList = el.dataset.library;
-      if (libraryList !== "all") { theme = ""; query = ""; q.value = ""; history.replaceState(null, "", "#/"); }
+      if (libraryList !== "all") {
+        theme = "";
+        query = "";
+        q.value = "";
+        if ((location.hash || "#/") !== "#/") history.replaceState({ ready: true }, "", "#/");
+      }
       mode = "home";
       render(true);
     };
@@ -624,14 +629,26 @@ function bind() {
   const random = document.getElementById("random");
   if (random) random.onclick = () => {
     const s = stories[Math.floor(Math.random() * stories.length)];
-    openSlug = s.slug; mode = "story"; history.replaceState(null, "", "#/s/" + openSlug); render();
+    openStory(s.slug);
   };
 }
 
-function go(next) {
-  mode = next;
-  if (next !== "story") history.replaceState(null, "", next === "map" ? "#/map" : "#/");
+function setHash(hash, replace) {
+  const next = hash || "#/";
+  if ((location.hash || "#/") === next) { fromHash(); render(); return; }
+  history[replace ? "replaceState" : "pushState"]({ ready: true }, "", next);
+  fromHash();
   render();
+}
+function openStory(slug) {
+  if ((location.hash || "#/") !== "#/") history.replaceState({ ready: true }, "", "#/");
+  history.pushState({ ready: true, story: slug }, "", "#/s/" + slug);
+  fromHash();
+  render();
+}
+function go(next) {
+  if (next === "home" && history.state && history.state.story) { history.back(); return; }
+  setHash(next === "map" ? "#/map" : "#/");
 }
 
 window.UdiSite = {
@@ -673,14 +690,27 @@ q.oninput = () => {
 
 function fromHash() {
   const h = decodeURIComponent(location.hash || "");
-  if (h.startsWith("#/s/")) { openSlug = h.slice(4); mode = "story"; }
-  else if (h.startsWith("#/t/")) { theme = h.slice(4); libraryList = "all"; mode = "home"; }
-  else if (h === "#/map") mode = "map";
-  else mode = "home";
+  if (h.startsWith("#/s/")) { openSlug = h.slice(4); mode = "story"; return; }
+  if (h.startsWith("#/t/")) { theme = h.slice(4); query = ""; if (q) q.value = ""; libraryList = "all"; mode = "home"; return; }
+  if (h === "#/map") { mode = "map"; return; }
+  mode = "home";
+  theme = "";
+}
+function onHistory() {
+  fromHash();
+  render();
 }
 window.addEventListener("resize", syncHeaderHeight);
-window.addEventListener("hashchange", () => { fromHash(); render(); });
+window.addEventListener("popstate", onHistory);
+window.addEventListener("hashchange", onHistory);
 fromHash();
+if (mode === "story") {
+  const slug = openSlug;
+  history.replaceState({ ready: true }, "", "#/");
+  history.pushState({ ready: true, story: slug }, "", "#/s/" + slug);
+} else if (!history.state || !history.state.ready) {
+  history.replaceState({ ready: true }, "", location.hash || "#/");
+}
 render();
 const localSite = location.hostname === "127.0.0.1" || location.hostname === "localhost";
 const auth = document.getElementById("auth");

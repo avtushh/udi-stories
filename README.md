@@ -35,7 +35,7 @@ On localhost, logged out, the nav shows **התחברות**. Logged in, it shows 
 
 ## Reading a story
 
-The full header stays only while the story is still at the top of the page. A right arrow in that header row returns to the library. It does not sit on its own row above the story card. After scrolling, the header leaves and a bar shows the story name plus that same arrow.
+The full header stays only while the story is still at the top of the page. A right arrow in that header row returns to the library. The browser back button does the same. It does not sit on its own row above the story card. After scrolling, the header leaves and a bar shows the story name plus that same arrow.
 
 Inside the card the order is title, author, synopsis, tags, then reading time. Phone and desktop use the same side-by-side cover layout. The phone cover is just smaller.
 
