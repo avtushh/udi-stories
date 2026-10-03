@@ -113,6 +113,12 @@ main { padding: 28px 32px 24px; max-width: 1240px; margin: 0 auto; }
 }
 body.ready .load-bar { animation: none; opacity: 0; transition: opacity .28s ease; }
 body:not(.ready) .site-foot { display: none; }
+.read-progress {
+  display: none; position: fixed; z-index: 25; height: 2px;
+  background: #d0d0d0; pointer-events: none;
+  transform: scaleX(0); transform-origin: right center;
+}
+body[data-page="story"] .read-progress { display: block; }
 @keyframes load-grow {
   0% { transform: scaleX(.08); }
   35% { transform: scaleX(.46); }

@@ -573,11 +573,31 @@ function watchStoryTitle() {
       bar.style.width = box.width + "px";
     }
     syncTopBack();
+    syncReadProgress();
   };
   watchStoryTitle.onScroll = past;
   window.addEventListener("scroll", past, { passive: true });
   window.addEventListener("resize", past);
   past();
+}
+
+function syncReadProgress() {
+  const bar = document.querySelector(".read-progress");
+  const text = document.querySelector(".reader .body");
+  if (!bar || !text) return;
+  const collapsed = document.querySelector(".reader")?.classList.contains("collapsed");
+  const chrome = collapsed ? document.querySelector(".story-bar") : document.querySelector(".top");
+  const edge = chrome ? chrome.getBoundingClientRect().bottom : 0;
+  const box = text.getBoundingClientRect();
+  bar.style.top = Math.max(0, edge) + "px";
+  bar.style.left = box.left + "px";
+  bar.style.width = box.width + "px";
+  const start = text.getBoundingClientRect().top + window.scrollY - Math.max(0, edge);
+  const room = window.innerHeight - Math.max(0, edge);
+  const distance = text.offsetHeight - room;
+  const p = distance <= 0 ? 1 : Math.min(1, Math.max(0, (window.scrollY - start) / distance));
+  bar.style.transform = `scaleX(${p})`;
+  bar.setAttribute("aria-valuenow", String(Math.round(p * 100)));
 }
 
 function syncTopBack() {

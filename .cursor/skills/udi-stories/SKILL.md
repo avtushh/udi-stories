@@ -69,6 +69,7 @@ The footer is a full-width warm-dark band (`#241e1a`), centered. Links live in `
 - Those two lists are buttons in the library toolbar, beside א״ב / כרונולוגי, רשימה / כרטיסיות, and סיפור אקראי. They replace the story grid. They use the same list or cards view as the rest of the library. They are not separate shelves.
 - **עוד באותו נושא** follows the library view. Cards: one horizontal row (`.row.scroll`, at most 8). List: five stories in the list layout.
 - While the page is loading, the footer stays hidden and a 2px orange bar sits at the top. `body.ready` is added after the first `render()`. Do not show the footer before that.
+- While reading, a 2px warm-neutral gray bar (`#d0d0d0`) under the visible header shows progress through the story text (`.body` only). Its width matches the text column, so it does not cover the scrollbar. It sits under the site header until that header scrolls away, then under the fixed story bar.
 - **מהתחלה לסוף** and **מהסוף להתחלה** are one arrow button beside the library heading **לפי א״ב** or **לפי תאריך כתיבה**. Up is start-to-end (א to ת, or oldest first). Down is end-to-start. Clicking flips it. Stories with no date stay at the end either way. The choice is `localStorage` `aba-sort-dir`. Do not put that button in the sort toolbar.
 
 ## Updating the live site
