@@ -43,6 +43,8 @@ A small globe to the left of the story-count line opens the Google My Maps list 
 
 **סיפורים אחרונים** are the stories opened in this browser tab. They disappear when the tab closes. **סיפורים שקראתי** stay on this browser until the reader presses **לא קראתי**. Opening a story does not mark it as read. A read story shows a small green check beside its title. Both lists are buttons in the library toolbar, and they use the same list or cards view as the rest of the stories.
 
+The footer on every page links to **זכויות יוצרים ותנאי שימוש**. The stories are independently published by אודי גבריאלי.
+
 ## Publish
 
 Push `main` to this repository. GitHub Pages rebuilds https://avtushh.github.io/udi-stories/ from that branch.

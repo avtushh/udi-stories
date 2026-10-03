@@ -340,6 +340,21 @@ function renderMap() {
     </section>`;
 }
 
+function renderLegal() {
+  app.innerHTML = `
+    <div class="page-head">
+      <h1>זכויות יוצרים ותנאי שימוש</h1>
+    </div>
+    <div class="legal">
+      <p>© 2026 אודי גבריאלי. כל הזכויות שמורות.</p>
+      <p>כל הסיפורים, הטקסטים והתכנים הספרותיים המופיעים באתר זה הם יצירותיו של אודי גבריאלי ומוגנים בזכויות יוצרים.</p>
+      <p>אין להעתיק, לשכפל, לפרסם, להפיץ, לתרגם, לעבד, להציג מחדש או לעשות שימוש אחר בתכנים אלה, במלואם או בחלקם, ללא קבלת אישור מראש ובכתב מבעל זכויות היוצרים, למעט שימוש המותר על פי דין.</p>
+      <p>מותר לשתף קישורים לעמודים באתר, לרבות קישורים לסיפורים, כל עוד השיתוף מפנה לאתר המקורי ואינו מציג את היצירה כאילו נכתבה או פורסמה על ידי אדם אחר.</p>
+      <p>אין בהעמדת הסיפורים לקריאה באתר משום ויתור על זכויות היוצרים בהם או הענקת רישיון להעתקתם, הפצתם או שימוש בהם מחוץ לאתר.</p>
+      <p>אם מופיעים באתר תמונות, איורים או חומרים אחרים שאינם יצירותיו של אודי גבריאלי, הזכויות בהם שייכות לבעלי הזכויות הרלוונטיים, בהתאם למקרה.</p>
+    </div>`;
+}
+
 function tagChip(tag) {
   return `<button class="tag shared" data-tag="${esc(tag.display)}" type="button">${esc(tag.display)} <small>${tag.count}</small></button>`;
 }
@@ -562,6 +577,7 @@ function syncTopBack() {
 
 function render(keepScroll) {
   document.body.dataset.page = mode;
+  document.title = mode === "legal" ? "זכויות יוצרים ותנאי שימוש" : "אודי סיפורים";
   if (mode !== "story" && watchStoryTitle.onScroll) {
     window.removeEventListener("scroll", watchStoryTitle.onScroll);
     window.removeEventListener("resize", watchStoryTitle.onScroll);
@@ -569,6 +585,7 @@ function render(keepScroll) {
   }
   document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("on", b.dataset.go === (mode === "story" ? "home" : mode)));
   if (mode === "map") renderMap();
+  else if (mode === "legal") renderLegal();
   else if (mode === "story") renderStory();
   else renderHome();
   bind();
@@ -685,6 +702,7 @@ q.oninput = () => {
   theme = "";
   libraryList = "all";
   mode = "home";
+  if (location.hash === "#/legal") history.replaceState({ ready: true }, "", "#/");
   render(true);
 };
 
@@ -693,6 +711,7 @@ function fromHash() {
   if (h.startsWith("#/s/")) { openSlug = h.slice(4); mode = "story"; return; }
   if (h.startsWith("#/t/")) { theme = h.slice(4); query = ""; if (q) q.value = ""; libraryList = "all"; mode = "home"; return; }
   if (h === "#/map") { mode = "map"; return; }
+  if (h === "#/legal") { mode = "legal"; return; }
   mode = "home";
   theme = "";
 }

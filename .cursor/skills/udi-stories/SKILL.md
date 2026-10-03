@@ -37,7 +37,9 @@ Static Hebrew RTL site. No build step. `app.js` renders both catalogs. `styles.c
 
 ## Routes
 
-Hash only: `#/` library, `#/s/<slug>` story, `#/t/<theme>` theme filter, `#/map` topics and tags.
+Hash only: `#/` library, `#/s/<slug>` story, `#/t/<theme>` theme filter, `#/map` topics and tags, `#/legal` copyright and terms.
+
+The footer on every page is `© 2026 אודי גבריאלי. כל הזכויות שמורות.` plus a link to `#/legal` titled **זכויות יוצרים ותנאי שימוש**. The copyright belongs to אודי גבריאלי. Do not name a publisher, and do not add legal text beyond what is already on that page. Do not add a cookie banner or a privacy policy unless the user asks after being told what data the site actually sends.
 
 ## Story fields
 
