@@ -572,7 +572,9 @@ function syncTopBack() {
   const btn = document.getElementById("top-back");
   if (!btn) return;
   const collapsed = document.querySelector(".reader")?.classList.contains("collapsed");
-  btn.hidden = mode !== "story" || !!collapsed;
+  btn.hidden = mode === "story" ? !!collapsed : mode !== "legal";
+  const terms = document.querySelector(".site-foot a");
+  if (terms) terms.hidden = mode === "legal";
 }
 
 function render(keepScroll) {
