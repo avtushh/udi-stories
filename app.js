@@ -108,6 +108,7 @@ let query = "";
 let openSlug = "";
 let view = localStorage.getItem("aba-view") === "list" ? "list" : "cards";
 let sortMode = localStorage.getItem("aba-sort") === "date" ? "date" : "alpha";
+let sortDir = localStorage.getItem("aba-sort-dir") === "desc" ? "desc" : "asc";
 let libraryList = "all";
 function storedSlugs(store, key) {
   try {
@@ -135,11 +136,15 @@ function isRead(slug) {
 let signedIn = false;
 let openEditor = () => {};
 function ordered(list) {
+  const dir = sortDir === "desc" ? -1 : 1;
   return list.slice().sort((a, b) => {
     if (sortMode === "date") {
-      return (a.date || "9999-99-99").localeCompare(b.date || "9999-99-99") || a.title.localeCompare(b.title, "he");
+      if (!a.date && !b.date) return a.title.localeCompare(b.title, "he");
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return dir * a.date.localeCompare(b.date) || a.title.localeCompare(b.title, "he");
     }
-    return a.title.localeCompare(b.title, "he");
+    return dir * a.title.localeCompare(b.title, "he");
   });
 }
 let readSize = window.matchMedia("(max-width: 800px)").matches ? 19 : 21;
@@ -274,7 +279,7 @@ function renderHome() {
     ? (libraryList === "recent" ? "סיפורים אחרונים" : "סיפורים שקראתי")
     : query.trim()
     ? `תוצאות עבור „${esc(query.trim())}”`
-    : (theme ? theme : (sortMode === "date" ? "לפי תאריך כתיבה" : "כל הסיפורים"));
+    : (theme ? theme : (sortMode === "date" ? "לפי תאריך כתיבה" : "לפי א״ב"));
   const rows = sortMode === "date" && !picked
     ? byYear(list).map(([year, items]) => `<h3 class="year">${year}</h3><div class="row${view === "list" ? " as-list" : ""}">${items.map(s => card(s, query.trim())).join("")}</div>`).join("")
     : `<div class="row${view === "list" ? " as-list" : ""}">${list.map(s => card(s, query.trim())).join("")}</div>`;
@@ -310,7 +315,13 @@ function renderHome() {
     </div></div>
     ${!picked && view === "cards" && sortMode !== "date" && !query.trim() && !theme ? shelves : ""}
     <section class="shelf">
-      <div class="shelf-h"><h2>${gridTitle}</h2><span style="color:#757575;font-size:14px">${list.length}</span></div>
+      <div class="shelf-h">
+        <div class="shelf-title">
+          <h2>${gridTitle}</h2>
+          ${!picked && !query.trim() && !theme ? `<button type="button" class="dir-btn" data-dir-toggle aria-label="${sortDir === "desc" ? "מהסוף להתחלה" : "מהתחלה לסוף"}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${sortDir === "desc" ? "M6 10l6 6 6-6" : "M6 14l6-6 6 6"}" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>` : ""}
+        </div>
+        <span style="color:#757575;font-size:14px">${list.length}</span>
+      </div>
       ${list.length ? rows : `<p class="empty">${empty}</p>`}
     </section>`;
 }
@@ -456,7 +467,8 @@ function renderStory(keepPlace) {
   if (!s) { mode = "home"; render(); return; }
   if (!keepPlace) rememberRecent(s.slug);
   const read = isRead(s.slug);
-  const related = stories.filter(x => x.slug !== s.slug && (x.primary === s.primary || (s.keywords || []).some(k => (x.keywords || []).includes(k)))).slice(0, 6);
+  const related = stories.filter(x => x.slug !== s.slug && (x.primary === s.primary || (s.keywords || []).some(k => (x.keywords || []).includes(k))));
+  const relatedShown = (view === "list" ? related.slice(0, 5) : related.slice(0, 8));
   const allTags = tagsFor(s);
   const shared = [...allTags.filter(tag => !tag.name).slice(0, 6), ...allTags.filter(tag => tag.name).slice(0, 4)];
   const sharedKeys = new Set(shared.map(tag => clean(tag.display)));
@@ -498,7 +510,7 @@ function renderStory(keepPlace) {
         ${parts.filter(p => p.text).map(p => `<p>${esc(p.text)}</p>`).join("")}
         ${s.dateLabel ? `<p class="written">נכתב ${esc(s.dateLabel)}</p>` : ""}
       </div>
-      ${related.length ? `<section class="more"><h2>עוד באותו נושא</h2><div class="row">${related.map(x => card(x, "")).join("")}</div></section>` : ""}
+      ${relatedShown.length ? `<section class="more"><h2>עוד באותו נושא</h2><div class="row${view === "list" ? " as-list" : " scroll"}">${relatedShown.map(x => card(x, "")).join("")}</div></section>` : ""}
     </article>`;
   document.getElementById("back").onclick = () => go("home");
   const mark = on => {
@@ -625,6 +637,13 @@ function bind() {
       render(true);
     };
   });
+  app.querySelectorAll("[data-dir-toggle]").forEach(el => {
+    el.onclick = () => {
+      sortDir = sortDir === "desc" ? "asc" : "desc";
+      localStorage.setItem("aba-sort-dir", sortDir);
+      render(true);
+    };
+  });
   app.querySelectorAll("[data-view]").forEach(el => {
     el.onclick = () => {
       view = el.dataset.view;
@@ -733,6 +752,7 @@ if (mode === "story") {
   history.replaceState({ ready: true }, "", location.hash || "#/");
 }
 render();
+document.body.classList.add("ready");
 const localSite = location.hostname === "127.0.0.1" || location.hostname === "localhost";
 const auth = document.getElementById("auth");
 const addOpen = document.getElementById("add-open");
