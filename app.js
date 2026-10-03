@@ -490,9 +490,12 @@ function renderStory(keepPlace) {
             ${signedIn && addedSlugs.has(s.slug) ? `<button type="button" class="edit-story" id="edit-story" aria-label="עריכה"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M13.2 6.8l3 3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></button>` : ""}
           </div>
           <p class="byline">מאת <b>אודי גבריאלי</b></p>
-          <div class="view-toggle read-toggle" role="group" aria-label="סימון קריאה">
-            <button type="button" id="mark-unread" class="${read ? "" : "on"}">לא קראתי</button>
-            <button type="button" id="mark-read" class="${read ? "on" : ""}">קראתי</button>
+          <div class="read-row">
+            <div class="view-toggle read-toggle" role="group" aria-label="סימון קריאה">
+              <button type="button" id="mark-unread" class="${read ? "" : "on"}">לא קראתי</button>
+              <button type="button" id="mark-read" class="${read ? "on" : ""}">קראתי</button>
+            </div>
+            <button type="button" class="share-btn" id="share"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>שתף</span></button>
           </div>
           ${s.synopsis ? `<div class="blurb"><details><summary>תקציר</summary><p>${esc(s.synopsis)}</p></details><div class="tip" role="tooltip">${esc(s.synopsis)}</div></div>` : ""}
           <div class="chips" style="margin:0">
@@ -525,6 +528,7 @@ function renderStory(keepPlace) {
   };
   document.getElementById("mark-read").onclick = () => mark(true);
   document.getElementById("mark-unread").onclick = () => mark(false);
+  document.getElementById("share").onclick = () => shareStory(s);
   const editStory = document.getElementById("edit-story");
   if (editStory) editStory.onclick = () => openEditor(s);
   document.getElementById("smaller").onclick = () => { readSize = Math.max(16, readSize - 2); renderStory(true); };
@@ -579,6 +583,26 @@ function watchStoryTitle() {
   window.addEventListener("scroll", past, { passive: true });
   window.addEventListener("resize", past);
   past();
+}
+
+function shareStory(s) {
+  const url = new URL(location.href);
+  url.search = "";
+  url.hash = "#/s/" + s.slug;
+  const payload = { title: s.title, url: url.href };
+  if (navigator.share) {
+    navigator.share(payload).catch(err => { if (!err || err.name !== "AbortError") copyStoryLink(url.href); });
+    return;
+  }
+  copyStoryLink(url.href);
+}
+function copyStoryLink(url) {
+  const label = document.querySelector("#share span");
+  navigator.clipboard.writeText(url).then(() => {
+    if (!label) return;
+    label.textContent = "הועתק";
+    setTimeout(() => { label.textContent = "שתף"; }, 1400);
+  }).catch(() => {});
 }
 
 function syncReadProgress() {

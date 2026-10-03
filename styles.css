@@ -199,7 +199,17 @@ body[data-page="story"] .read-progress { display: block; }
 .view-toggle { display: flex; flex-wrap: wrap; background: #f2f2f2; border-radius: 999px; padding: 3px; }
 .view-toggle button { border: 0; background: transparent; border-radius: 999px; padding: 8px 12px; font-weight: 700; font-size: 14px; color: #444; }
 .view-toggle button.on { background: #fff; color: var(--orange); }
-.read-toggle { margin: 0 0 12px; }
+.read-toggle { margin: 0; }
+.read-row { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; }
+.share-btn {
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  margin-inline-start: auto;
+  border: 0; background: #f2f2f2; color: #444;
+  border-radius: 999px; padding: 8px 12px;
+  font-weight: 700; font-size: 14px;
+}
+.share-btn svg { width: 16px; height: 16px; }
+.share-btn:hover { color: var(--orange); }
 .row.as-list { display: flex; flex-direction: column; gap: 0; }
 .row.as-list .card {
   display: grid; grid-template-columns: 52px minmax(0, 1fr);
