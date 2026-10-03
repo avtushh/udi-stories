@@ -1,5 +1,10 @@
 
 const THEMES = {
+  "קיבוץ ומקום": "קיבוץ, שכונה, כביש, ועיר שמשנה את מי שגר בה.",
+  "זהות וכפילות": "מי אני, מי דומה לי, ושם שלא יושב על האדם.",
+  "אמנות וכתיבה": "סופרים, מלחינים, וסיפור שמסתכל על עצמו.",
+  "אבסורד וחלום": "חלומות, היגיון עקום, ומשפטים שרצים עד הקצה.",
+  "ילדות": "ילדים, הורים, ומה שנשאר מהבית הראשון.",
   "מוות ואבל": "פרידות, לוויות, ומי שנשאר בחדר אחרי שהדלת נסגרת.",
   "זקנה ושיכחה": "זיכרון שהולך, גוף שמסרב, ושמות שחוזרים לא נכון.",
   "משפחה ודם": "הורים, אחים, תאומים, וחשבונות ישנים בתוך הבית.",
@@ -7,12 +12,7 @@ const THEMES = {
   "תשוקה וגוף": "רצון, בושה, וגוף שמדבר לפני האדם.",
   "מלחמה ואלימות": "חיילים, מחבלים, וזעם שנשאר אחרי שהירי נגמר.",
   "שואה וגרמנים": "היטלר, נאצים, וזיכרון אירופה שיושב בתוך יום רגיל.",
-  "קיבוץ ומקום": "קיבוץ, שכונה, כביש, ועיר שמשנה את מי שגר בה.",
-  "זהות וכפילות": "מי אני, מי דומה לי, ושם שלא יושב על האדם.",
   "יום־יום ישראלי": "מרכול, תור, הודעה בטלפון, וחיים קטנים שמתפקעים.",
-  "אמנות וכתיבה": "סופרים, מלחינים, וסיפור שמסתכל על עצמו.",
-  "אבסורד וחלום": "חלומות, היגיון עקום, ומשפטים שרצים עד הקצה.",
-  "ילדות": "ילדים, הורים, ומה שנשאר מהבית הראשון.",
   "בעלי חיים": "כלב, פרה, זבוב, ויצור שקט ליד האדם."
 };
 
@@ -585,16 +585,20 @@ function watchStoryTitle() {
   past();
 }
 
+function storyShareUrl(s) {
+  const base = location.origin + location.pathname.replace(/index\.html$/, "");
+  const name = s.title.trim().replace(/[\\/]/g, "").replace(/\s+/g, "-");
+  return base + "#/s/" + s.slug + "/" + name;
+}
 function shareStory(s) {
-  const url = new URL(location.href);
-  url.search = "";
-  url.hash = "#/s/" + s.slug;
-  const payload = { title: s.title, url: url.href };
+  const url = storyShareUrl(s);
+  const message = "אני רוצה לשתף איתך את הסיפור הזה:";
+  const payload = { text: message, url };
   if (navigator.share) {
-    navigator.share(payload).catch(err => { if (!err || err.name !== "AbortError") copyStoryLink(url.href); });
+    navigator.share(payload).catch(err => { if (!err || err.name !== "AbortError") copyStoryLink(message + "\n" + url); });
     return;
   }
-  copyStoryLink(url.href);
+  copyStoryLink(message + "\n" + url);
 }
 function copyStoryLink(url) {
   const label = document.querySelector("#share span");
@@ -635,7 +639,7 @@ function syncTopBack() {
 
 function render(keepScroll) {
   document.body.dataset.page = mode;
-  document.title = mode === "legal" ? "זכויות יוצרים ותנאי שימוש" : "אודי סיפורים";
+  document.title = mode === "legal" ? "זכויות יוצרים ותנאי שימוש" : "סיפורים";
   if (mode !== "story" && watchStoryTitle.onScroll) {
     window.removeEventListener("scroll", watchStoryTitle.onScroll);
     window.removeEventListener("resize", watchStoryTitle.onScroll);
@@ -723,7 +727,7 @@ function setHash(hash, replace) {
   render();
 }
 function openStory(slug) {
-  if ((location.hash || "#/") !== "#/") history.replaceState({ ready: true }, "", "#/");
+  history.replaceState({ ready: true, place: window.scrollY }, "", location.hash || "#/");
   history.pushState({ ready: true, story: slug }, "", "#/s/" + slug);
   fromHash();
   render();
@@ -773,20 +777,30 @@ q.oninput = () => {
 
 function fromHash() {
   const h = decodeURIComponent(location.hash || "");
-  if (h.startsWith("#/s/")) { openSlug = h.slice(4); mode = "story"; return; }
+  if (h.startsWith("#/s/")) { openSlug = h.slice(4).split("/")[0]; mode = "story"; return; }
   if (h.startsWith("#/t/")) { theme = h.slice(4); query = ""; if (q) q.value = ""; libraryList = "all"; mode = "home"; return; }
   if (h === "#/map") { mode = "map"; return; }
   if (h === "#/legal") { mode = "legal"; return; }
   mode = "home";
   theme = "";
 }
-function onHistory() {
+function onHistory(keepScroll) {
   fromHash();
-  render();
+  render(keepScroll);
 }
+let skipHash = false;
 window.addEventListener("resize", syncHeaderHeight);
-window.addEventListener("popstate", onHistory);
-window.addEventListener("hashchange", onHistory);
+window.addEventListener("popstate", () => {
+  skipHash = true;
+  const y = history.state && history.state.place;
+  onHistory(true);
+  if (typeof y === "number") requestAnimationFrame(() => window.scrollTo(0, y));
+  setTimeout(() => { skipHash = false; }, 0);
+});
+window.addEventListener("hashchange", () => {
+  if (skipHash) { skipHash = false; return; }
+  onHistory(false);
+});
 fromHash();
 if (mode === "story") {
   const slug = openSlug;

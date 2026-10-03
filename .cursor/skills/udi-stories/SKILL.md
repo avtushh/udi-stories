@@ -1,13 +1,13 @@
 ---
 name: udi-stories
 description: >-
-  Continue work on אודי סיפורים, the Hebrew static site of Udi's short stories.
+  Continue work on סיפורים, the Hebrew static site of Udi's short stories.
   Use when editing this repository, the site at /Users/avtush/p/_Family/Aba/site,
   story text, themes, tags, dates, illustrations, the local editor, the two
   catalogs, or when publishing to avtushh/udi-stories or GitHub Pages.
 ---
 
-# אודי סיפורים
+# סיפורים
 
 Static Hebrew RTL site. No build step. `app.js` renders both catalogs. `styles.css` is the Wattpad-like layout (white, orange `#ff500a`, Rubik + Frank Ruhl Libre).
 
@@ -49,7 +49,7 @@ The footer is a full-width warm-dark band (`#241e1a`), centered. Links live in `
 
 ## Rules already decided
 
-- Brand in the header is **אודי סיפורים**. Do not restore a second title "סיפורים גמורים".
+- Brand in the header is **סיפורים**. Do not restore "אודי סיפורים" or "סיפורים גמורים". The author name stays אודי גבריאלי.
 - Link previews (WhatsApp) come from the Open Graph tags in `index.html` and `og.png` (1200×630 PNG, absolute URL). Do not point `og:image` at the SVG favicon.
 - Text-size buttons keep the same character under the story bar. Do not rebuild the story and jump back to the top.
 - Cards show theme and reading time. No author name and no date on the card. The home count stays `${stories.length}`.
@@ -57,11 +57,11 @@ The footer is a full-width warm-dark band (`#241e1a`), centered. Links live in `
 - Synopsis is spoilery. Keep it behind `<summary>תקציר</summary>`. On a fine pointer, show the tooltip only after 1 second of hover.
 - Dates inside the manuscript (a line that is only `d/m/y` or `d.m.y`, or a title line with tabs then a date) are stripped from the body. The only visible date is at the **end** of the story: `נכתב {dateLabel}`, in gray (`.body p.written`), not the story ink. Not in the title, not at the top. If `dateLabel` is empty, show no date. Do not also print a raw date from the text.
 - The site header is sticky only on the home page. On a story it scrolls away. While the story is still at the top, a right arrow sits in that header row (`#top-back`) and returns to the library. It does not take a row above the story card. Once the large title reaches the top, `.reader` gets `collapsed`: the header arrow hides, and a fixed `.story-bar` shows the arrow plus the story title. There is no "חזרה לספרייה" label. Story meta order is title, author, synopsis, tags, then reading time. Mobile uses the same side-by-side cover layout as desktop, only smaller.
-- Opening a story pushes a history entry with the library (`#/`) underneath it. The browser back button, the header arrow, and the story arrow return to the main library. Direct story links do the same.
+- Opening a story pushes it on top of the current page. Back (browser, header arrow, or story arrow) returns to that page, including a chosen category and the scroll position there. A story opened from a direct link still has the main library underneath, so back from that link goes to the library.
 - Shared word tags: a keyword of 1–3 words, listed on at least 3 stories, and found as a whole word in at most 25% of story texts. Whole-word match (`hasWord`); final Hebrew letters are not folded there, niqqud is stripped.
 - Name tags: a `figures` entry on at least 2 stories, not a role (`notNames` in `app.js`). A name click matches the `figures` field, not a substring of the text. Names already used as word tags stay in the word list.
 - Tag browser is on `#/map`, under the themes: word tags, then a **שמות** group. Clicking a tag searches; clicking a theme name filters by theme.
-- Theme chips are smaller than the top nav buttons.
+- Theme chips, shelves, and the topic map follow the key order of `THEMES` in `app.js`. The first five are קיבוץ ומקום, זהות וכפילות, אמנות וכתיבה, אבסורד וחלום, ילדות. Do not move מוות ואבל or זקנה ושיכחה back to the front.
 - Cover drawings are ink illustrations. Within one `primary` theme, each story gets a different index until all 27 drawings are used.
 - The home subtitle has a small globe to its left. It opens the public Google My Maps viewer (`mid=10ms6cbzXqtH6h_mj64L6jA4a1VLtD0A`). Use the viewer URL, not the `/edit` URL. There is no extra sentence beside the subtitle.
 - **סיפורים אחרונים** is this tab's session only (`sessionStorage` `aba-recent`, newest first, at most 12). Opening a story adds it. Closing the tab clears it.
@@ -70,7 +70,7 @@ The footer is a full-width warm-dark band (`#241e1a`), centered. Links live in `
 - **עוד באותו נושא** follows the library view. Cards: one horizontal row (`.row.scroll`, at most 8). List: five stories in the list layout.
 - While the page is loading, the footer stays hidden and a 2px orange bar sits at the top. `body.ready` is added after the first `render()`. Do not show the footer before that.
 - While reading, a 2px warm-neutral gray bar (`#d0d0d0`) under the visible header shows progress through the story text (`.body` only). Its width matches the text column, so it does not cover the scrollbar. It sits under the site header until that header scrolls away, then under the fixed story bar.
-- On a story, **שתף** sits on the left of the read-status row, on the same grey pill background. It uses the system share sheet. The shared link is `#/s/<slug>` on this site, so opening it lands on that story.
+- On a story, **שתף** sits on the left of the read-status row, on the same grey pill background. It uses the system share sheet. The text is `אני רוצה לשתף איתך את הסיפור הזה:` and the link itself carries the story name: `#/s/<slug>/<title>`. Opening it lands on that story. The slug is the part before the slash.
 - **מהתחלה לסוף** and **מהסוף להתחלה** are one arrow button beside the library heading **לפי א״ב** or **לפי תאריך כתיבה**. Up is start-to-end (א to ת, or oldest first). Down is end-to-start. Clicking flips it. Stories with no date stay at the end either way. The choice is `localStorage` `aba-sort-dir`. Do not put that button in the sort toolbar.
 
 ## Updating the live site

@@ -1,4 +1,4 @@
-# אודי סיפורים
+# סיפורים
 
 Hebrew reading site for Udi's finished short stories. Static files, no build. The live site is for reading. Adding and editing stories runs only on this computer.
 
